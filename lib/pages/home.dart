@@ -23,10 +23,15 @@ class HomePage extends StatelessWidget {
             IconButton(
               icon: const Icon(Icons.add),
               onPressed: () async {
+
+                mostrarLoading(context);
+                
                 final pagarBloc = context.read<PagarBloc>().state;
                 final resp = await stripeService.pagarConTarjetaNueva(
                     amount: pagarBloc.montoPagarString,
                     currency: pagarBloc.moneda);
+                
+                Navigator.pop(context);
 
                 if (resp.ok) {
                   mostrarAlerta(context, 'Tarjata OK', 'Todo salió OK');

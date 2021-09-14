@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:stripe_app/global/environments.dart';
+import 'package:stripe_app/helpers/helpers.dart';
 import 'package:stripe_app/models/stripe_custom_response.dart';
 import 'package:stripe_app/models/stripe_intent_response.dart';
 import 'package:stripe_payment/stripe_payment.dart';
@@ -37,8 +38,8 @@ class StripeService {
 
     try {
       final paymentMethod = await StripePayment.paymentRequestWithCardForm(CardFormPaymentRequest());
-      final resp = await _crearPaymentIntent(amount: amount, currency: currency);
-      return StripeCustomResponse(ok: true);
+      final paymentResponse = await _realizarPago(amount: amount, currency: currency, paymentMethod: paymentMethod);
+      return paymentResponse;
     } catch (e) {
       return StripeCustomResponse(ok: false, msg: e.toString());
     }
@@ -64,10 +65,29 @@ class StripeService {
 
   Future pagarConApplePay() async {}
 
-  Future _realizarPago({
-    required String amount,
-    required String currency,
-    required PaymentMethod paymentMethod
-  }) async {}
+  Future _realizarPago({ required String amount, required String currency, required PaymentMethod paymentMethod }) async {
+    try {
+      
+      // Intent
+      final intentResponse = await _crearPaymentIntent(amount: amount, currency: currency);
+
+      // Payment
+      final paymentResult = await StripePayment.confirmPaymentIntent(
+        PaymentIntent(
+          clientSecret: intentResponse.clientSecret,
+          paymentMethodId: paymentMethod.id
+        )
+      );
+
+      if (paymentResult.status == 'succeeded'){
+        return StripeCustomResponse(ok: true);
+      } else {
+        return StripeCustomResponse(ok: false, msg: paymentResult.status);
+      }
+
+    } catch(e) {
+      return StripeCustomResponse(ok: false, msg: e.toString());
+    }
+  }
 
 }
