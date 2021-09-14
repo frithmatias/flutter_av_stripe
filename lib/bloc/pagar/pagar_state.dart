@@ -8,7 +8,7 @@ class PagarState {
   final bool tarjetaActiva;
   final TarjetaCredito? tarjeta;
 
-  String get montoPagarString => '${(montoPagar * 100).floor() / 100}';
+  String get montoPagarString => '${((montoPagar * 100).floor()/100).floor()}';
   
   const PagarState({  
     this.montoPagar = 250, 
