@@ -74,7 +74,16 @@ class PayButton extends StatelessWidget {
               style: TextStyle(color: Colors.white, fontSize: 22)),
         ],
       ),
-      onPressed: () {},
+      onPressed: () async {
+        final stripeService = StripeService();
+        final pagarState = context.read<PagarBloc>().state;
+
+        final resp = await stripeService.payAppleAndGoogle(
+          amount: pagarState.montoSendString, 
+          currency: pagarState.moneda
+        );
+
+      },
     );
   }
 
