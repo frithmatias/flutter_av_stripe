@@ -14,10 +14,8 @@ class PagarBloc extends Bloc<PagarEvent, PagarState> {
   Stream<PagarState> mapEventToState( PagarEvent event ) async* {
 
     if( event is OnSeleccionarTarjeta) {
-      print('Tarjeta seleccionada: ${event.tarjeta.cardNumber}');
       yield state.copyWith(tarjetaActiva: true, tarjeta: event.tarjeta);
     } else if ( event is OnDesactivarTarjeta ){
-      print('Tarjecta desactivada!');
       yield state.copyWith(tarjetaActiva: false ); 
     }
 

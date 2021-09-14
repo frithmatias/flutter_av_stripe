@@ -1,15 +1,9 @@
-// To parse this JSON data, do
-//
-//     final stripeIntentResponse = stripeIntentResponseFromJson(jsonString);
-
 import 'dart:convert';
 
 StripeIntentResponse stripeIntentResponseFromJson(String str) => StripeIntentResponse.fromJson(json.decode(str));
-
 String stripeIntentResponseToJson(StripeIntentResponse data) => json.encode(data.toJson());
 
 class StripeIntentResponse {
-
 
     String? id;
     String? object;
@@ -149,7 +143,6 @@ class StripeIntentResponse {
         "invoice": invoice,
         "last_payment_error": lastPaymentError,
         "livemode": livemode,
-        // ignore: prefer_null_aware_operators
         "metadata": metadata?.toJson(),
         "next_action": nextAction,
         "on_behalf_of": onBehalfOf,

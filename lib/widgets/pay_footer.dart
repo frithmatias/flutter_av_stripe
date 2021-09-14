@@ -3,13 +3,19 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:stripe_app/bloc/pagar/pagar_bloc.dart';
+import 'package:stripe_app/helpers/helpers.dart';
+import 'package:stripe_app/services/stripe_service.dart';
+import 'package:stripe_payment/stripe_payment.dart';
 
 class PayFooter extends StatelessWidget {
   const PayFooter({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
+
+    final pagarBloc = context.read<PagarBloc>();
     final width = MediaQuery.of(context).size.width;
+
     return Container(
         width: width,
         height: 100,
@@ -24,9 +30,9 @@ class PayFooter extends StatelessWidget {
             Column(
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.start,
-              children: const [
-                Text('Total', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-                Text('250.55 USD', style: TextStyle(fontSize: 20))
+              children: [
+                const Text('Total', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+                Text('${pagarBloc.state.montoPagarString} ${pagarBloc.state.moneda}', style: const TextStyle(fontSize: 20))
               ],
             ),
             const PayButton()
@@ -42,9 +48,9 @@ class PayButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocBuilder<PagarBloc, PagarState>(
       builder: (context, state) {
-        print(state.tarjetaActiva);
+
         return state.tarjetaActiva
-            ? buildCardPay(context)
+            ? buildCreditCardPay(context)
             : buildAppleAndGooglePay(context);
       },
     );
@@ -72,7 +78,7 @@ class PayButton extends StatelessWidget {
     );
   }
 
-  Widget buildCardPay(BuildContext context) {
+  Widget buildCreditCardPay(BuildContext context) {
     return MaterialButton(
       height: 45,
       minWidth: 150,
@@ -85,7 +91,31 @@ class PayButton extends StatelessWidget {
           Text('  Pay', style: TextStyle(color: Colors.white, fontSize: 22)),
         ],
       ),
-      onPressed: () {},
+      onPressed: () async {
+                
+        mostrarLoading(context);
+
+        final stripeService = StripeService();
+        final pagarState = context.read<PagarBloc>().state;
+        final expDate = pagarState.tarjeta!.expiracyDate.split('/');
+        final resp = await stripeService.pagarConTarjetaExistente(
+          amount: pagarState.montoSendString, 
+          currency: pagarState.moneda, 
+          card: CreditCard(
+            number: pagarState.tarjeta!.cardNumber,
+            currency: pagarState.moneda,
+            expMonth: int.parse(expDate[0]),
+            expYear: int.parse(expDate[1]),
+          )); 
+        
+        Navigator.pop(context);
+
+        if (resp.ok) {
+          mostrarAlerta(context, 'Tarjata OK', 'Todo salió OK');
+        } else {
+          mostrarAlerta(context, 'Falló', resp.msg!);
+        }
+      },
     );
   }
 }
